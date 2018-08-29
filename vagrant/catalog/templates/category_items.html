@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+        <div class="forms__container">
+            <h1>{{category_name.name}} Items ({{count}} Items)</h1>
+            <div class="forms__container">
+                {% if category_items != [] %}
+                    {% for i in category_items %}
+                        <p><span class="list__items"><a href="/item/{{i.id}}"> {{i.title}} </a> </span></p>
+                    
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+{% endblock %}

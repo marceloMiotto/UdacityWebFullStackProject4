@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+        <div class="forms__container">
+            {% if item != [] %}
+                {% for i in item %}
+                    <h1> {{i.title}} </h1>
+                    <p>Description: {{i.description}} </p>
+                    {% if session['access_token'] is not none and session['user_id'] == i.user_id %}
+                        <br>
+                        <br>
+                        <div class="button__edit">
+                            <form method="GET" action="/update_item/{{i.id}}">
+                                <button type="Submit" class="button">Edit</button>
+                            </form>
+                        </div>
+                        <div class="button__delete">
+                            <form method="GET" action="/delete_item/{{i.id}}">
+                                <button type="Submit" class="button">Delete </button>
+                            </form>
+                         </div>
+                         <div class="clearfix"></div>
+                     {% endif %}    
+                {% endfor %}
+            {% endif %}
+        </div>    
+       
+{% endblock %}
+

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+                <div class="forms__container">
+                {% for i in deleted_item %}
+                    {% if session['access_token'] is not none and session['user_id'] != i.user_id %}
+                        <h1> Access denied! </h1>
+                    {% endif %}
+                
+                    {% if deleted %}
+                        <h2> Successfully Deleted</h2>
+                
+                    {% else %}
+                        <h1> Do you want to delete item <span class='item_category'>{{i.title}}</span> ?</h1>
+                        <br/>
+
+                            <form method="POST" action="/delete_item/{{i.id}}">
+                                <button type="Submit" class="button">Delete</button>
+                            </form>
+                    {% endif %}
+                {% endfor %}
+                
+                </div>
+        
+{% endblock %}

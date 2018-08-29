@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Items Catalog - Udacity Project</title>
+    <link rel=stylesheet type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    </head>    
+    <body>
+
+        <header class="header">
+            <div class="content__header">
+                <div class="box2 header__left">
+                    <h1><span class="h1__title"> <a href="/"> Categories APP </a></span></h1>
+                </div>
+                <div class="box2 header__right">
+                    
+                        {% if session['access_token'] is none %}
+                            <form method="GET" action="/login">
+                                <button type="Submit" class="button">Login </button>
+                            </form>
+                        {% else %}
+                            <form method="GET" action="/logout">
+                                <button type="Submit" class="button">Logout </button>
+                            </form>
+                        {% endif %}
+                    
+                </div>
+                <hr>
+            </div>
+        </header>
+
+        <main class="container">
+            <section>
+                {% if categories != [] %}
+                <h1> Categories </h1>
+                    <div class="sidenav">
+                    {% for c in categories %}
+                        <a href="/categories/{{c.id}}/items" >{{c.name}}</a>
+                        </br>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+
+            </section>
+
+            <section>
+                <div class="content">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <ul>
+                        {% for message in messages %}
+                            <li> <strong> {{ message }} </strong> </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% endwith %}
+                </section>
+
+                <section>
+                    <div class="content">
+                        {% block content %}{% endblock %}
+                    </div>
+                </section>
+            </div>
+
+        </main>
+        <footer>
+        
+
+        </footer>
+    </body>
+</html>

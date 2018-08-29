@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+        <div class="forms__container">
+             {% if session['access_token'] is not none %}
+                 <form method="get" action="/insert_item">
+                     <button type="Submit" class="button">Add Item</button>
+                 </form>
+             {% endif %}
+
+            <h1>Latest Items</h1>
+                {% if latest_items != [] %}
+                   {% for i in latest_items %}
+                       <p> <span class="list__items"><a href="item/{{i.Items.id}}"> {{i.Items.title}} </a></span> <span class='item_category'>({{i.Categories.name}}) </span> </p>
+                   {% endfor %}
+                {% endif %}
+        </div>
+
+{% endblock %}
+

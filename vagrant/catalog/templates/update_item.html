@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}        
+        <div class="forms__container">
+        <h1>Edit Item </h1>
+            {% if edit_item != [] %}
+                <div class="forms__container">
+                    <form method="POST" action="/update_item/{{edit_item.id}}">
+                        <label for="title">Title</label>
+                        <input type="text" name="title" id="title" value="{{edit_item.title}}"><br>
+                        <label for="description">Description</label>
+                        <textarea name="description" id="description"style="height:200px">{{edit_item.description}}</textarea><br> <br>
+                        <label for="categories">Categories</label>
+                        <select name="categories" id="categories">
+                            <option value="Soccer" {% if category.name == 'Soccer'%} selected = "selected" {% endif %}>Soccer</option>
+                            <option value="Basketball" {% if category.name == 'Basketball'%} selected = "selected" {% endif %}>Basketball</option>
+                            <option value="Baseball"{% if category.name == 'Baseball'%} selected = "selected" {% endif %}>Baseball</option>
+                            <option value="Frisbee" {% if category.name == 'Frisbee'%} selected = "selected" {% endif %}>Frisbee</option>
+                            <option value="Snowboarding" {% if category.name == 'Snowboarding'%} selected = "selected" {% endif %}>Snowboarding</option>
+                            <option value="Rock Climbing" {% if category.name == 'Rock Climbing'%} selected = "selected" {% endif %}>Rock Climbing</option>
+                            <option value="Foosball" {% if category.name == 'Foosball'%} selected = "selected" {% endif %}>Foosball</option>
+                            <option value="Hockey" {% if category.name == 'Hockey'%} selected = "selected" {% endif %}>Hockey</option>
+                        </select>
+                        <br/>
+                        <button type="Submit" class="button">Update</button>
+                    </form>
+                </div>
+
+            {% endif %}
+        </div>
+{% endblock %}
+
+ 
