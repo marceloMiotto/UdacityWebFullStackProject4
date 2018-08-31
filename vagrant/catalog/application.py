@@ -1,5 +1,5 @@
 import psycopg2
-from flask import Flask, render_template, request, redirect, url_for,
+from flask import Flask, render_template, request, redirect, url_for
 from flask import jsonify, flash, session as login_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -51,7 +51,9 @@ def get_categories():
 
 
 def get_latest_items():
-    items = session.query(Items, Categories).join(Categories).order_by(Items.creation_date.desc()).limit(9)
+    items = session.query(Items, Categories).\
+                    join(Categories).order_by(Items.creation_date.desc()).\
+                    limit(9)
     return items
 
 
@@ -73,6 +75,24 @@ def create_user(name):
     return user.id
 
 
+def get_session_user_id():
+    try:
+        session_user_id = login_session['user_id']
+    except:
+        session_user_id = None
+
+    return session_user_id
+
+
+def get_session_token():
+    try:
+        session_token = login_session['access_token']
+    except:
+        session_token = None
+
+    return session_token
+
+
 @app.route('/login')
 def login():
     callback = url_for('authorized', _external=True)
@@ -84,7 +104,8 @@ def logout():
     login_session['access_token'] = None
     return render_template('index.html',
                            categories=get_categories(),
-                           latest_items=get_latest_items())
+                           latest_items=get_latest_items(),
+                           session_token=get_session_token())
 
 
 @app.route('/gconnect')
@@ -105,7 +126,8 @@ def authorized(resp):
     user_id = create_user(login_session['username'])
     login_session['user_id'] = user_id
     return render_template('index.html', categories=get_categories(),
-                           latest_items=get_latest_items())
+                           latest_items=get_latest_items(),
+                           session_token=get_session_token())
 
 
 @google.tokengetter
@@ -145,13 +167,16 @@ def categories():
 
     return render_template('index.html',
                            categories=get_categories(),
-                           latest_items=get_latest_items())
+                           latest_items=get_latest_items(),
+                           session_token=get_session_token()
+                           )
 
 
 @app.route('/insert_item', methods=['GET', 'POST'])
 def insert_item():
     if request.method == 'POST':
-        category = session.query(Categories).filter_by(name=request.form['categories']).one()
+        category = session.query(Categories).\
+                           filter_by(name=request.form['categories']).one()
         new_item = Items(title=request.form['title'],
                          description=request.form['description'],
                          creation_date=datetime.now(),
@@ -161,24 +186,29 @@ def insert_item():
         session.commit()
 
         return redirect(url_for('insert_item',
-                                categories=get_categories()))
+                                categories=get_categories(),
+                                session_token=get_session_token()))
 
     else:
         return render_template('insert_item.html',
-                               categories=get_categories())
+                               categories=get_categories(),
+                               session_token=get_session_token())
 
 
 @app.route('/categories/<int:category_id>/items', methods=['GET'])
 def category_items(category_id):
-    category_name = session.query(Categories).filter_by(id=category_id).one()
-    category_items = session.query(Items).filter_by(category_id=category_id).all()
+    category_name = session.query(Categories).\
+                            filter_by(id=category_id).one()
+    category_items = session.query(Items)\
+                            .filter_by(category_id=category_id).all()
     rows = session.query(Items).filter_by(category_id=category_id).count()
-    print dir(category_name)
+
     return render_template('category_items.html',
                            category_items=category_items,
                            categories=get_categories(),
                            category_name=category_name,
-                           count=rows)
+                           count=rows,
+                           session_token=get_session_token())
 
 
 @app.route('/item/<int:item_id>', methods=['GET'])
@@ -186,7 +216,8 @@ def get_item(item_id):
     item = session.query(Items).filter_by(id=item_id).all()
     return render_template('item_description.html',
                            item=item,
-                           categories=get_categories())
+                           categories=get_categories(),
+                           session_token=get_session_token())
 
 
 @app.route('/update_item/<int:item_id>', methods=['GET', 'POST'])
@@ -200,22 +231,26 @@ def update_item(item_id):
         if request.form['description']:
             edit_item.description = request.form['description']
         if request.form['categories']:
-            category = session.query(Categories).filter_by(name=request.form['categories']).one()
+            category = session.query(Categories).\
+                       filter_by(name=request.form['categories']).one()
             edit_item.category_id = category.id
 
         session.merge(edit_item)
         session.commit()
         return redirect(url_for('update_item',
                                 item_id=item_id,
-                                categories=get_categories()),
-                        category_name=category.name)
+                                categories=get_categories(),
+                                category_name=category.name,
+                                session_token=get_session_token()))
     else:
         edit_item = session.query(Items).filter_by(id=item_id).one()
-        category = session.query(Categories).filter_by(id=edit_item.category_id).one()
+        category = session.query(Categories)\
+                          .filter_by(id=edit_item.category_id).one()
         return render_template('update_item.html',
                                edit_item=edit_item,
                                categories=get_categories(),
-                               category=category)
+                               category=category,
+                               session_token=get_session_token())
 
 
 @app.route('/delete_item/<int:item_id>', methods=['GET', 'POST'])
@@ -223,32 +258,54 @@ def delete_item(item_id):
     if request.method == 'POST':
         deleted_item = session.query(Items).filter_by(id=item_id).one()
         session.delete(deleted_item)
+        if get_session_user_id() != deleted_item.id:
+            created_by_user = False
+        else:
+            created_by_user = True
         session.commit()
-        return render_template('delete_item.html',
-                               deleted=True,
-                               categories=get_categories())
+        return redirect(url_for('delete_item',
+                                deleted=str(True),
+                                categories=get_categories(),
+                                session_token=get_session_token(),
+                                created_by_user=created_by_user,
+                                item_id=1))
     else:
         deleted_item = session.query(Items).filter_by(id=item_id).all()
         return render_template('delete_item.html',
                                deleted_item=deleted_item,
-                               deleted=False,
-                               categories=get_categories())
+                               deleted=str(False),
+                               categories=get_categories(),
+                               session_token=get_session_token())
 
 
 @app.route('/catalog')
 def catalog_JSON():
-    json_result = "{Categories["
-    categories = session.query(Categories).all()
-    for i in categories:
-        json_result += str(i.serialize)
-        items = session.query(Items).filter_by(category_id=i.id).all()
-        json_result += "["
-        for j in items:
-            json_result += str(j.serialize)
-        json_result += "]"
-    json_result += "]}"
+    """ Endpoint JSON  based on
+    https://github.com/gmawji/item-catalog/blob/master/app.py"""
 
-    return jsonify(json_result)
+    categories = session.query(Categories).all()
+    category = [c.serialize for c in categories]
+    for c in range(len(category)):
+        items = [i.serialize for i in session.query(Items)
+                                             .filter_by(
+                                             category_id=category[c]["id"]
+                                             ).all()]
+        if items:
+            category[c]["Item"] = items
+
+    return jsonify(Category=category)
+
+
+@app.route('/catalog/<int:category_id>/<int:item_id>/JSON')
+def item_catalog_JSON(category_id, item_id):
+
+    try:
+        item = session.query(Items).\
+                       filter_by(id=item_id, category_id=category_id).one()
+    except:
+        return jsonify(None)
+
+    return jsonify(item=item.serialize)
 
 
 @app.route('/catalog/reset')

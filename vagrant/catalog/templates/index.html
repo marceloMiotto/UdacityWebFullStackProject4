@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
         <div class="forms__container">
-             {% if session['access_token'] is not none %}
+             {% if session_token is not none %}
                  <form method="get" action="/insert_item">
                      <button type="Submit" class="button">Add Item</button>
                  </form>

@@ -18,7 +18,7 @@
                 </div>
                 <div class="box2 header__right">
                     
-                        {% if session['access_token'] is none %}
+                        {% if session_token is none %}
                             <form method="GET" action="/login">
                                 <button type="Submit" class="button">Login </button>
                             </form>

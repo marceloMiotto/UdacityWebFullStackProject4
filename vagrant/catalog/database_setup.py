@@ -14,7 +14,7 @@ class Categories(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False, unique=True)
-    
+
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
@@ -23,9 +23,10 @@ class Categories(Base):
             'id': self.id,
         }
 
+
 class Users(Base):
     __tablename__ = 'users'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False, unique=True)
 
@@ -36,6 +37,7 @@ class Users(Base):
             'name': self.name,
             'id': self.id,
         }
+
 
 class Items(Base):
     __tablename__ = 'items'
@@ -56,8 +58,8 @@ class Items(Base):
             'title': self.title,
             'description': self.description,
             'creation_date': self.creation_date.strftime('%m/%d/%Y %H%M%S'),
-            'category_id':self.category_id,
-            'user_id':self.user_id,
+            'category_id': self.category_id,
+            'user_id': self.user_id,
         }
 
 
